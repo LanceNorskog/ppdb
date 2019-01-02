@@ -174,13 +174,15 @@ def load_ppdb(path, is_trivial=lambda e1, e2: False,
     if _ppdb_dict is not None and not force:
         return _ppdb_dict
 
-    if path.endswith('.pickle'):
+    if path.endswith('.pickle') or path.endswith('.pk'):
         with open(path, 'rb') as f:
             _ppdb_dict = cPickle.load(f)
         return _ppdb_dict
 
     transformations = TransformationDict()
 
+    total = 0
+    kept = 0
     with open(path, 'rb') as f:
         for line in f:
             line = line.decode('utf-8')
@@ -194,6 +196,7 @@ def load_ppdb(path, is_trivial=lambda e1, e2: False,
             lhs = tuple(clean_expression(lhs))
             rhs = tuple(clean_expression(rhs))
 
+            total += 1
             if len(lhs) == 0 or len(rhs) == 0:
                 continue
 
@@ -201,8 +204,10 @@ def load_ppdb(path, is_trivial=lambda e1, e2: False,
             if is_trivial(lhs, rhs):
                 continue
 
+            kept += 1
             # add rhs to the transformation dictionary
             transformations.add(lhs, rhs)
+        print('Total lines = {}, kept = {}'.format(total, kept))
 
     _ppdb_dict = transformations
 
